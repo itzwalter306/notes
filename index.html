@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chat Local">
+<meta name="theme-color" content="#0f0f14">
+<meta name="robots" content="noindex,nofollow">
+<title>Chat Local</title>
+<style>
+:root{--bg:#0f0f14;--panel:#17171f;--panel2:#22222d;--text:#ececf1;--muted:#9a9aab;--accent:#c2416b;--accent2:#e0678c;--border:#2c2c3a;--danger:#e5484d;--radius:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer}
+button:active{opacity:.7}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.danger{background:transparent;border-color:var(--danger);color:var(--danger)}
+button.icon{background:transparent;border:none;padding:6px 8px;font-size:20px;line-height:1}
+button.linkbtn{background:none;border:none;color:var(--accent2);padding:8px 0;font-size:14px}
+button.small-btn{padding:6px 12px;font-size:14px}
+button.wide{width:100%}
+input,textarea,select{font:inherit;font-size:16px;color:var(--text);background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;width:100%;-webkit-appearance:none;appearance:none}
+textarea{resize:vertical;min-height:70px}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+label.check{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);text-align:left;margin:16px 0}
+label.check input{width:22px;height:22px;-webkit-appearance:checkbox;appearance:auto;flex:none}
+h3{margin:28px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent2)}
+details{margin-top:16px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+summary{cursor:pointer;color:var(--muted);font-size:14px}
+.hidden{display:none!important}
+.muted{color:var(--muted)}.small{font-size:13px}.center{text-align:center}.mt{margin-top:12px}
+.row{display:flex;align-items:center}.gap{gap:10px;margin-top:12px}.grow{flex:1}
+.ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.screen{position:fixed;top:0;left:0;right:0;height:var(--app-h,100%);display:flex;flex-direction:column}
+header.bar{display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;background:var(--panel);border-bottom:1px solid var(--border);min-height:52px;flex:none}
+header.bar h1{flex:1;font-size:17px;margin:0 4px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px calc(env(safe-area-inset-bottom) + 20px)}
+/* lock */
+.lock{align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 50% 30%,#2a1220,var(--bg) 70%);z-index:100}
+.lock-inner{width:100%;max-width:340px;text-align:center}
+.lock-inner .logo{font-size:46px}
+.lock-inner h2{margin:8px 0 4px}
+.lock-inner input{margin-top:12px;text-align:center;font-size:20px;letter-spacing:3px}
+.lock-inner button.wide{margin-top:14px;padding:13px}
+/* cards */
+.card{display:flex;align-items:center;gap:12px;padding:10px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px}
+.card-body{flex:1;min-width:0}
+.card-title{font-weight:600}
+.card-sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;background:var(--panel2)}
+.avatar.sm{width:34px;height:34px}.avatar.lg{width:104px;height:104px}
+.av-edit{display:flex;align-items:center;gap:16px}
+/* chat */
+.msgs{padding-bottom:12px}
+.msg{display:flex;margin:10px 0}
+.msg.user{justify-content:flex-end}
+.msg.assistant{flex-direction:column;align-items:flex-start}
+.bubble{max-width:86%;padding:10px 13px;border-radius:18px;background:var(--panel2);overflow-wrap:anywhere}
+.msg.user .bubble{background:var(--accent);color:#fff;border-bottom-right-radius:6px}
+.msg.assistant .bubble{border-bottom-left-radius:6px}
+.bubble em{color:#b4b4c8}.msg.user .bubble em{color:#ffe1ea}
+.bubble .q{color:#f3c97a}.msg.user .bubble .q{color:#fff}
+.typing{opacity:.6;animation:blink 1s infinite}@keyframes blink{50%{opacity:.2}}
+.swipe{display:flex;align-items:center;gap:4px;margin:4px 0 0 4px;font-size:13px;color:var(--muted)}
+.swipe button{background:none;border:none;padding:4px 10px;font-size:18px;color:var(--muted)}
+.composer{display:flex;align-items:flex-end;gap:8px;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);background:var(--panel);border-top:1px solid var(--border);flex:none}
+.composer textarea{min-height:42px;max-height:140px;resize:none;border-radius:21px;padding:10px 14px}
+.send{width:44px;height:42px;border-radius:21px;padding:0;flex:none;font-size:18px}
+.send.stop{background:var(--panel2);border-color:var(--border);color:var(--text)}
+.modelbar{padding:8px 14px;background:#1d1520;border-bottom:1px solid var(--border);font-size:13px;flex:none}
+.mb-row{display:flex;align-items:center;gap:10px}.mb-row span{flex:1}
+.progress{height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:6px}
+.progress>div{height:100%;width:0;background:var(--accent);transition:width .25s}
+/* seg */
+.seg{display:flex;gap:4px;background:var(--panel2);padding:4px;border-radius:12px;margin-top:10px}
+.seg button{flex:1;border:none;background:transparent;padding:8px 6px;font-size:14px}
+.seg button.on{background:var(--accent);color:#fff}
+/* sheet */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;z-index:60}
+.sheet-panel{width:100%;max-height:88%;overflow-y:auto;background:var(--panel);border-radius:18px 18px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px)}
+.sheet-title{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 10px}
+.sheet-btn{display:block;width:100%;margin:6px 0;padding:14px;text-align:center}
+.danger-text{color:var(--danger)}
+.chat-item{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;background:var(--panel2);min-width:0}
+.chat-item.on{border-color:var(--accent)}
+.chat-item .grow{min-width:0}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 80px);transform:translateX(-50%);background:#2d2d3a;color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;z-index:200;max-width:90%;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.warn{background:#3a2a12;border:1px solid #6b4b16;color:#f3c97a;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:10px}
+body.privacy #app,body.privacy #sheet{filter:blur(28px)}
+</style>
+</head>
+<body>
+
+<!-- ===== Verrouillage ===== -->
+<div id="lock" class="screen lock hidden">
+  <div class="lock-inner">
+    <div class="logo">🔒</div>
+    <h2>Chat Local</h2>
+    <p id="lockMsg" class="muted small"></p>
+    <div id="setupBox" class="hidden">
+      <p class="muted small">Choisis un code. Il chiffre toutes tes données sur cet appareil.</p>
+      <input id="pin1" type="password" placeholder="Code (4 caractères min.)" autocomplete="new-password">
+      <input id="pin2" type="password" placeholder="Confirmer le code" autocomplete="new-password">
+      <label class="check"><input id="adult" type="checkbox"> Je confirme avoir 18 ans ou plus</label>
+      <button id="setupBtn" class="primary wide">Créer le coffre</button>
+      <p class="muted small">Sans ce code, les données sont illisibles. Il est impossible de le récupérer.</p>
+    </div>
+    <div id="unlockBox" class="hidden">
+      <input id="pin" type="password" placeholder="Code" autocomplete="current-password">
+      <button id="unlockBtn" class="primary wide">Déverrouiller</button>
+      <button id="forgotBtn" class="linkbtn">Code oublié ?</button>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+
+  <!-- ===== Accueil ===== -->
+  <section id="v-home" class="screen">
+    <header class="bar">
+      <h1>Personnages</h1>
+      <button class="icon" id="lockBtn" aria-label="Verrouiller">🔒</button>
+      <button class="icon" id="settingsBtn" aria-label="Réglages">⚙️</button>
+    </header>
+    <div class="scroll">
+      <div id="homeList"></div>
+      <div class="row gap">
+        <button id="newCharBtn" class="primary grow">+ Nouveau</button>
+        <button id="importCharBtn" class="grow">Importer une fiche</button>
+      </div>
+      <input type="file" id="importCharFile" accept=".json,.png,application/json,image/png" class="hidden">
+      <p class="muted small center mt">Fiches compatibles : JSON ou PNG (format « character card » V2/V3).</p>
+    </div>
+  </section>
+
+  <!-- ===== Conversation ===== -->
+  <section id="v-chat" class="screen hidden">
+    <header class="bar">
+      <button class="icon" id="chatBack" aria-label="Retour">‹</button>
+      <img id="chatAvatar" class="avatar sm" alt="">
+      <h1 id="chatTitle"></h1>
+      <button class="icon" id="chatMenu" aria-label="Menu">⋯</button>
+    </header>
+    <div id="modelBar" class="modelbar hidden">
+      <div class="mb-row"><span id="mbText">Modèle non chargé</span><button id="mbLoad" class="small-btn">Charger</button></div>
+      <div class="progress"><div id="mbProg"></div></div>
+    </div>
+    <div id="msgs" class="scroll msgs"></div>
+    <div class="composer">
+      <textarea id="input" rows="1" placeholder="Message…"></textarea>
+      <button id="sendBtn" class="primary send" aria-label="Envoyer">➤</button>
+    </div>
+  </section>
+
+  <!-- ===== Éditeur de personnage ===== -->
+  <section id="v-editor" class="screen hidden">
+    <header class="bar">
+      <button class="icon" id="edBack" aria-label="Retour">‹</button>
+      <h1 id="edTitle">Personnage</h1>
+      <button id="edSave" class="primary small-btn">Enregistrer</button>
+    </header>
+    <div class="scroll">
+      <div class="av-edit">
+        <img id="e-av" class="avatar lg" alt="">
+        <div><button id="e-avBtn">Changer l'image</button><br><button id="e-avDel" class="linkbtn">Retirer l'image</button></div>
+      </div>
+      <input type="file" id="e-avfile" accept="image/*" class="hidden">
+      <label>Nom</label><input id="e-name" autocomplete="off">
+      <label>Description et personnalité</label><textarea id="e-desc" rows="7" placeholder="Apparence, caractère, histoire, façon de parler, envies…"></textarea>
+      <label>Scénario</label><textarea id="e-scen" rows="3" placeholder="Le contexte : où, quand, quelle relation avec {{user}}…"></textarea>
+      <label>Premier message</label><textarea id="e-first" rows="4" placeholder="Ce que {{char}} dit pour lancer la conversation."></textarea>
+      <label>Exemples de dialogue (optionnel)</label><textarea id="e-ex" rows="4" placeholder="{{user}}: …&#10;{{char}}: …"></textarea>
+      <label>Prompt système (vide = celui des réglages)</label><textarea id="e-sys" rows="4"></textarea>
+      <details>
+        <summary>Génération propre à ce personnage</summary>
+        <p class="muted small">Laisse vide pour utiliser les réglages globaux.</p>
+        <div class="grid2">
+          <div><label>Température</label><input id="e-temp" type="number" step="0.05" min="0" max="2" inputmode="decimal" placeholder="global"></div>
+          <div><label>Top-p</label><input id="e-topp" type="number" step="0.01" min="0" max="1" inputmode="decimal" placeholder="global"></div>
+          <div><label>Longueur max</label><input id="e-max" type="number" step="10" min="16" max="4096" inputmode="numeric" placeholder="global"></div>
+          <div><label>Pénalité répétition</label><input id="e-rep" type="number" step="0.01" min="1" max="2" inputmode="decimal" placeholder="global"></div>
+        </div>
+      </details>
+      <p class="muted small mt">Variables : <b>{{char}}</b> = nom du personnage, <b>{{user}}</b> = ton nom.</p>
+      <div class="row gap">
+        <button id="edExport" class="grow">Exporter</button>
+        <button id="edDelete" class="danger grow">Supprimer</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Réglages ===== -->
+  <section id="v-settings" class="screen hidden">
+    <header class="bar">
+      <button class="icon" id="setBack" aria-label="Retour">‹</button>
+      <h1>Réglages</h1>
+    </header>
+    <div class="scroll">
+      <h3>Modèle d'IA</h3>
+      <div class="seg"><button data-engine="webllm">WebLLM · GPU</button><button data-engine="wllama">GGUF · CPU</button></div>
+
+      <div id="s-webllm">
+        <div id="s-gpuWarn" class="warn hidden">WebGPU n'est pas disponible ici. Mets à jour iOS (26+) ou utilise le moteur GGUF.</div>
+        <label>Modèle</label><select id="s-model"></select>
+        <button id="s-fullList" class="linkbtn">Afficher tous les modèles WebLLM</button>
+        <div id="s-custom" class="hidden">
+          <label>URL du modèle (dépôt Hugging Face au format MLC)</label><input id="s-cUrl" placeholder="https://huggingface.co/…" autocomplete="off" autocapitalize="off">
+          <label>Identifiant du modèle</label><input id="s-cId" placeholder="MonModele-q4f16_1-MLC" autocomplete="off" autocapitalize="off">
+          <label>URL de la librairie WASM (model_lib)</label><input id="s-cLib" placeholder="https://…/xxx-webgpu.wasm" autocomplete="off" autocapitalize="off">
+        </div>
+        <p class="muted small">Calcul sur la puce graphique : rapide. Vise 1 à 3 milliards de paramètres sur iPhone. Si un modèle « q4f16 » échoue, essaie la version « q4f32 ».</p>
+      </div>
+
+      <div id="s-wllama">
+        <div class="seg"><button data-gsrc="url">Depuis une URL</button><button data-gsrc="file">Fichier sur l'iPhone</button></div>
+        <div id="s-gUrlBox">
+          <label>URL directe du fichier .gguf</label>
+          <input id="s-gUrl" placeholder="https://huggingface.co/…/resolve/main/modele-Q4_K_M.gguf" autocomplete="off" autocapitalize="off">
+        </div>
+        <div id="s-gFileBox">
+          <p id="s-gFileName" class="muted small"></p>
+          <button id="s-gFileBtn">Choisir un fichier .gguf</button>
+          <input type="file" id="s-gFile" class="hidden">
+        </div>
+        <p class="muted small">Accepte n'importe quel modèle GGUF, mais tourne sur le processeur, donc plus lentement. Préfère un fichier de moins de 2 Go (Q4_K_M, 1 à 3 milliards de paramètres).</p>
+      </div>
+
+      <label>Taille du contexte (mémoire de la conversation)</label>
+      <select id="s-ctx"><option value="2048">2048 tokens</option><option value="4096">4096 tokens</option><option value="8192">8192 tokens (gourmand)</option></select>
+      <div class="row gap"><button id="s-load" class="primary grow">Charger le modèle</button><button id="s-unload" class="grow">Décharger</button></div>
+      <p id="s-status" class="muted small"></p>
+      <div class="progress"><div id="s-prog"></div></div>
+
+      <h3>Génération</h3>
+      <div class="grid2">
+        <div><label>Température</label><input id="s-temp" type="number" step="0.05" min="0" max="2" inputmode="decimal"></div>
+        <div><label>Top-p</label><input id="s-topp" type="number" step="0.01" min="0" max="1" inputmode="decimal"></div>
+        <div><label>Longueur max (tokens)</label><input id="s-max" type="number" step="10" min="16" max="4096" inputmode="numeric"></div>
+        <div><label>Pénalité répétition</label><input id="s-rep" type="number" step="0.01" min="1" max="2" inputmode="decimal"></div>
+      </div>
+      <p class="muted small">Température haute = plus créatif et imprévisible. Pénalité de répétition entre 1,05 et 1,15 conseillée.</p>
+
+      <h3>Ton profil</h3>
+      <label>Ton nom ({{user}})</label><input id="s-uname" autocomplete="off">
+      <label>Ta description (optionnel)</label><textarea id="s-udesc" rows="3" placeholder="Ce que les personnages savent de toi."></textarea>
+
+      <h3>Prompt système par défaut</h3>
+      <textarea id="s-sys" rows="7"></textarea>
+      <button id="s-sysReset" class="linkbtn">Rétablir le texte par défaut</button>
+
+      <h3>Sécurité</h3>
+      <label>Verrouillage automatique</label>
+      <select id="s-lock">
+        <option value="0">Dès que l'app passe en arrière-plan</option>
+        <option value="30">Après 30 secondes en arrière-plan</option>
+        <option value="60">Après 1 minute</option>
+        <option value="300">Après 5 minutes</option>
+        <option value="900">Après 15 minutes</option>
+        <option value="-1">Jamais (verrouillage manuel)</option>
+      </select>
+      <button id="s-pin" class="wide mt">Changer le code</button>
+
+      <h3>Données</h3>
+      <p id="s-storage" class="muted small"></p>
+      <div class="row gap"><button id="s-export" class="grow">Sauvegarde chiffrée</button><button id="s-import" class="grow">Restaurer</button></div>
+      <input type="file" id="s-importFile" class="hidden" accept=".json,application/json">
+      <button id="s-delModels" class="wide mt">Supprimer les modèles téléchargés</button>
+      <button id="s-wipe" class="danger wide mt">Tout effacer</button>
+      <p class="muted small center mt">Tout reste sur cet appareil. Rien n'est envoyé ailleurs : seuls les modèles et le code de l'app sont téléchargés.</p>
+    </div>
+  </section>
+</div>
+
+<div id="sheet" class="sheet hidden"><div class="sheet-panel" id="sheetBody"></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script type="module">
+/* =========================================================
+   Chat Local — chatbot IA 100 % sur l'appareil
+   Moteurs : WebLLM (WebGPU) ou wllama (llama.cpp WASM, GGUF)
+   Données : IndexedDB, chiffrées AES-GCM (clé PBKDF2 du code)
+   ========================================================= */
+
+const WEBLLM_URL = 'https://esm.run/@mlc-ai/web-llm@0.2';
+const WLLAMA_BASE = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2/esm/';
+const ITER = 310000;
+
+const WEBLLM_MODELS = [
+  ['Llama-3.2-1B-Instruct-q4f16_1-MLC', 'Llama 3.2 1B · très léger'],
+  ['Llama-3.2-1B-Instruct-q4f32_1-MLC', 'Llama 3.2 1B (q4f32) · très léger'],
+  ['Qwen2.5-1.5B-Instruct-q4f16_1-MLC', 'Qwen 2.5 1.5B · léger'],
+  ['SmolLM2-1.7B-Instruct-q4f16_1-MLC', 'SmolLM2 1.7B · léger'],
+  ['gemma-2-2b-it-q4f16_1-MLC', 'Gemma 2 2B · moyen'],
+  ['Llama-3.2-3B-Instruct-q4f16_1-MLC', 'Llama 3.2 3B · moyen (recommandé)'],
+  ['Llama-3.2-3B-Instruct-q4f32_1-MLC', 'Llama 3.2 3B (q4f32) · moyen'],
+  ['Qwen2.5-3B-Instruct-q4f16_1-MLC', 'Qwen 2.5 3B · moyen'],
+  ['Phi-3.5-mini-instruct-q4f16_1-MLC', 'Phi 3.5 mini 3.8B · lourd'],
+];
+
+const DEFAULT_SYS =
+`Tu es {{char}}. Tu participes à un jeu de rôle interactif et immersif avec {{user}}.
+- Reste toujours dans la peau de {{char}} : sa personnalité, sa voix, ses envies.
+- Décris les actions et les pensées entre *astérisques*, et écris les dialogues normalement.
+- Ne parle et n'agis jamais à la place de {{user}}.
+- Réponds en français, de façon vivante et détaillée, et fais avancer l'histoire.
+- Tous les personnages sont des adultes.`;
+
+/* ---------- utilitaires ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const enc = new TextEncoder(), dec = new TextDecoder();
+const bin = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return s; };
+const b64 = buf => btoa(bin(new Uint8Array(buf)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const fmtMB = n => n ? (n / 1048576).toFixed(0) + ' Mo' : '?';
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let toastT;
+function toast(t) {
+  const el = $('#toast'); el.textContent = t; el.classList.remove('hidden');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.add('hidden'), 3200);
+}
+function download(name, text) {
+  const u = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = u; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 8000);
+}
+
+/* ---------- IndexedDB ---------- */
+const idb = {
+  db: null,
+  open() {
+    return this.db ||= new Promise((res, rej) => {
+      const r = indexedDB.open('chatlocal', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+  },
+  async get(k) {
+    const db = await this.open();
+    return new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  },
+  async setMany(obj) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const t = db.transaction('kv', 'readwrite'); const st = t.objectStore('kv');
+      for (const [k, v] of Object.entries(obj)) st.put(v, k);
+      t.oncomplete = () => res(); t.onerror = () => rej(t.error);
+    });
+  },
+  set(k, v) { return this.setMany({ [k]: v }); },
+  async clear() {
+    const db = await this.open();
+    return new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').clear(); t.oncomplete = () => res(); t.onerror = () => rej(t.error); });
+  }
+};
+
+/* ---------- chiffrement ---------- */
+async function deriveKey(pin, salt, iter = ITER) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptJSON(key, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj)));
+  return { iv: b64(iv), data: b64(ct) };
+}
+async function decryptJSON(key, box) {
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(box.iv) }, key, unb64(box.data));
+  return JSON.parse(dec.decode(pt));
+}
+
+/* ---------- état ---------- */
+let KEY = null, S = null;
+let cur = { charId: null, chatId: null };
+
+function defaultSettings() {
+  return {
+    engine: 'webllm', webllmModel: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
+    customModel: { url: '', id: '', lib: '' },
+    ggufSource: 'url', ggufUrl: '', ggufFileName: '',
+    nCtx: 4096, temperature: 0.9, topP: 0.95, maxTokens: 400, repPenalty: 1.1,
+    systemPrompt: DEFAULT_SYS, autoLock: 0
+  };
+}
+function defaultState() {
+  return {
+    v: 1,
+    persona: { name: 'Moi', description: '' },
+    characters: [{
+      id: uid(), name: 'Assistant', avatar: null,
+      description: 'Un compagnon de discussion chaleureux, curieux et plein d\'humour.',
+      scenario: '', firstMessage: 'Salut {{user}} ! De quoi as-tu envie de parler ?',
+      examples: '', systemPrompt: '', gen: {}
+    }],
+    chats: [],
+    settings: defaultSettings()
+  };
+}
+function migrate(st) {
+  st.settings = { ...defaultSettings(), ...(st.settings || {}) };
+  st.settings.customModel = { url: '', id: '', lib: '', ...(st.settings.customModel || {}) };
+  st.persona ||= { name: 'Moi', description: '' };
+  st.characters ||= []; st.chats ||= [];
+  return st;
+}
+
+let saveTimer = null;
+function save() { clearTimeout(saveTimer); saveTimer = setTimeout(() => saveNow().catch(e => toast('Erreur de sauvegarde : ' + e.message)), 400); }
+async function saveNow() {
+  clearTimeout(saveTimer);
+  if (!KEY || !S) return;
+  await idb.set('vault', await encryptJSON(KEY, S));
+}
+
+const getChar = id => S.characters.find(c => c.id === id);
+const getChat = id => S.chats.find(c => c.id === id);
+const curChar = () => S && getChar(cur.charId);
+const curChat = () => S && getChat(cur.chatId);
+
+/* ---------- verrouillage ---------- */
+function showLock(mode, msg = '') {
+  $('#app').classList.add('hidden');
+  $('#lock').classList.remove('hidden');
+  $('#setupBox').classList.toggle('hidden', mode !== 'setup');
+  $('#unlockBox').classList.toggle('hidden', mode !== 'unlock');
+  $('#lockMsg').textContent = msg;
+  $('#pin').value = ''; $('#pin1').value = ''; $('#pin2').value = '';
+}
+
+async function initLock() {
+  if (!window.crypto?.subtle || !window.indexedDB) {
+    showLock('none', 'Cette page doit être ouverte via une adresse https:// (pas en fichier local) pour pouvoir chiffrer tes données.');
+    return;
+  }
+  const meta = await idb.get('meta');
+  showLock(meta ? 'unlock' : 'setup');
+  if (meta) setTimeout(() => $('#pin').focus(), 300);
+}
+
+async function doSetup() {
+  const p1 = $('#pin1').value, p2 = $('#pin2').value;
+  if (!$('#adult').checked) return ($('#lockMsg').textContent = 'Cette application est réservée aux adultes.');
+  if (p1.length < 4) return ($('#lockMsg').textContent = 'Le code doit faire au moins 4 caractères.');
+  if (p1 !== p2) return ($('#lockMsg').textContent = 'Les deux codes ne correspondent pas.');
+  $('#lockMsg').textContent = 'Création du coffre…';
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  KEY = await deriveKey(p1, salt);
+  S = defaultState();
+  await idb.setMany({ meta: { salt: b64(salt), iter: ITER, created: Date.now() }, vault: await encryptJSON(KEY, S) });
+  enterApp();
+}
+
+function failInfo() { try { return JSON.parse(localStorage.getItem('cl_fail')) || { n: 0, t: 0 }; } catch { return { n: 0, t: 0 }; } }
+
+async function doUnlock() {
+  const pin = $('#pin').value;
+  if (!pin) return;
+  const f = failInfo();
+  const wait = f.n >= 5 ? Math.min(300, 5 * 2 ** (f.n - 5)) * 1000 : 0;
+  const left = Math.ceil((f.t + wait - Date.now()) / 1000);
+  if (left > 0) return ($('#lockMsg').textContent = `Trop d'essais. Réessaie dans ${left} s.`);
+  $('#lockMsg').textContent = 'Déverrouillage…';
+  $('#unlockBtn').disabled = true;
+  try {
+    const meta = await idb.get('meta');
+    const key = await deriveKey(pin, unb64(meta.salt), meta.iter || ITER);
+    const box = await idb.get('vault');
+    S = migrate(await decryptJSON(key, box));
+    KEY = key;
+    localStorage.removeItem('cl_fail');
+    enterApp();
+  } catch {
+    f.n++; f.t = Date.now(); localStorage.setItem('cl_fail', JSON.stringify(f));
+    $('#lockMsg').textContent = 'Code incorrect.';
+    $('#pin').value = '';
+  } finally { $('#unlockBtn').disabled = false; }
+}
+
+function enterApp() {
+  $('#lock').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#pin').blur();
+  renderHome(); show('home');
+  renderModelStatus();
+}
+
+async function lock() {
+  if (!KEY) return;
+  Engine.stop();
+  try { await saveNow(); } catch {}
+  KEY = null; S = null; cur = { charId: null, chatId: null };
+  $('#homeList').innerHTML = ''; $('#msgs').innerHTML = ''; $('#input').value = '';
+  ['#e-name','#e-desc','#e-scen','#e-first','#e-ex','#e-sys','#s-udesc','#s-sys'].forEach(s => { $(s).value = ''; });
+  $('#e-av').removeAttribute('src');
+  closeSheet();
+  showLock('unlock');
+}
+
+// verrouillage auto quand l'app passe en arrière-plan
+let hiddenAt = 0, pickerUntil = 0;
+function pick(input) { pickerUntil = Date.now() + 120000; input.click(); }
+document.addEventListener('visibilitychange', () => {
+  const picking = Date.now() < pickerUntil;
+  if (document.hidden) {
+    hiddenAt = Date.now();
+    if (!picking) document.body.classList.add('privacy');
+    if (KEY && S && S.settings.autoLock === 0 && !picking) lock();
+  } else {
+    document.body.classList.remove('privacy');
+    if (picking) { pickerUntil = 0; return; }
+    if (KEY && S) { const d = S.settings.autoLock; if (d > 0 && Date.now() - hiddenAt > d * 1000) lock(); }
+  }
+});
+
+async function wipeAll() {
+  try { await Engine.unload(); } catch {}
+  try { await idb.clear(); } catch {}
+  try { localStorage.clear(); } catch {}
+  await clearModelStorage();
+  location.reload();
+}
+
+/* ---------- moteur IA ---------- */
+let sessionModelFile = null;
+
+async function opfsDir() {
+  const root = await navigator.storage.getDirectory();
+  return root.getDirectoryHandle('models', { create: true });
+}
+async function opfsSaveModel(file, onP) {
+  const dir = await opfsDir();
+  try { await dir.removeEntry('model.gguf'); } catch {}
+  const fh = await dir.getFileHandle('model.gguf', { create: true });
+  if (typeof fh.createWritable !== 'function') throw new Error('no-writable');
+  const w = await fh.createWritable();
+  try {
+    const reader = file.stream().getReader(); let done = 0;
+    for (;;) {
+      const { value, done: end } = await reader.read();
+      if (end) break;
+      await w.write(value); done += value.length; onP(done / file.size);
+    }
+    await w.close();
+  } catch (e) { try { await w.abort(); } catch {} try { await dir.removeEntry('model.gguf'); } catch {} throw e; }
+}
+async function opfsGetModel() {
+  if (sessionModelFile) return sessionModelFile;
+  try { const dir = await opfsDir(); const fh = await dir.getFileHandle('model.gguf'); const f = await fh.getFile(); return f.size ? f : null; } catch { return null; }
+}
+async function clearModelStorage() {
+  try { for (const k of await caches.keys()) if (!k.startsWith('chatlocal-shell')) await caches.delete(k); } catch {}
+  try {
+    const root = await navigator.storage.getDirectory();
+    const names = [];
+    if (root.keys) for await (const n of root.keys()) names.push(n);
+    else names.push('models');
+    for (const n of names) { try { await root.removeEntry(n, { recursive: true }); } catch {} }
+  } catch {}
+  sessionModelFile = null;
+}
+
+const Engine = {
+  kind: null, key: null, eng: null, loading: null, stopFn: null, label: '',
+  configKey() {
+    const s = S.settings;
+    return s.engine === 'webllm'
+      ? 'w|' + (s.webllmModel === '__custom' ? s.customModel.id + '|' + s.customModel.url : s.webllmModel) + '|' + s.nCtx
+      : 'g|' + (s.ggufSource === 'file' ? 'file:' + s.ggufFileName : s.ggufUrl) + '|' + s.nCtx;
+  },
+  get ready() { return !!this.eng && !!S && this.key === this.configKey(); },
+  async unload() {
+    const e = this.eng, k = this.kind;
+    this.eng = null; this.key = null; this.kind = null; this.label = '';
+    try { if (k === 'webllm') await e?.unload(); else if (k === 'wllama') await e?.exit(); } catch {}
+  },
+  load(onP) {
+    if (this.ready) return Promise.resolve();
+    if (this.loading) return this.loading;
+    this.loading = (async () => {
+      await this.unload();
+      const s = S.settings; const key = this.configKey();
+      if (s.engine === 'webllm') {
+        if (!navigator.gpu) throw new Error("WebGPU indisponible sur ce navigateur. Passe au moteur GGUF dans les réglages, ou mets à jour iOS.");
+        onP(0, 'Chargement de WebLLM…');
+        const webllm = await import(WEBLLM_URL);
+        let appConfig = webllm.prebuiltAppConfig; let id = s.webllmModel;
+        if (id === '__custom') {
+          const cm = s.customModel;
+          if (!cm.url || !cm.lib) throw new Error('Modèle personnalisé incomplet (URL et librairie WASM requises).');
+          id = cm.id || 'modele-perso';
+          appConfig = { ...appConfig, model_list: [...appConfig.model_list.filter(m => m.model_id !== id), { model: cm.url, model_id: id, model_lib: cm.lib }] };
+        }
+        this.eng = await webllm.CreateMLCEngine(id, {
+          appConfig,
+          initProgressCallback: r => onP(r.progress ?? 0, (r.text || '').replace(/Fetching param cache/i, 'Téléchargement').slice(0, 120))
+        }, { context_window_size: s.nCtx });
+        this.kind = 'webllm'; this.label = id;
+      } else {
+        onP(0, 'Chargement de llama.cpp…');
+        const mod = await import(WLLAMA_BASE + 'index.js');
+        const w = new mod.Wllama({
+          'single-thread/wllama.wasm': WLLAMA_BASE + 'single-thread/wllama.wasm',
+          'multi-thread/wllama.wasm': WLLAMA_BASE + 'multi-thread/wllama.wasm'
+        });
+        if (s.ggufSource === 'file') {
+          const f = await opfsGetModel();
+          if (!f) throw new Error('Aucun fichier GGUF disponible. Choisis-en un dans les réglages.');
+          onP(0.5, 'Lecture du fichier…');
+          await w.loadModel([f], { n_ctx: s.nCtx });
+          this.label = s.ggufFileName || 'fichier GGUF';
+        } else {
+          if (!s.ggufUrl) throw new Error('Aucune URL GGUF indiquée dans les réglages.');
+          await w.loadModelFromUrl(s.ggufUrl, {
+            n_ctx: s.nCtx,
+            progressCallback: ({ loaded, total }) => onP(total ? loaded / total : 0, `Téléchargement ${fmtMB(loaded)} / ${fmtMB(total)}`)
+          });
+          this.label = decodeURIComponent(s.ggufUrl.split('/').pop().split('?')[0]);
+        }
+        this.eng = w; this.kind = 'wllama';
+      }
+      this.key = key;
+      onP(1, 'Modèle prêt');
+    })();
+    const p = this.loading;
+    p.finally(() => { this.loading = null; renderModelStatus(); }).catch(() => {});
+    return p;
+  },
+  async generate(messages, p, onText) {
+    try {
+      if (this.kind === 'webllm') {
+        const eng = this.eng;
+        this.stopFn = () => { try { eng.interruptGenerate(); } catch {} };
+        const it = await eng.chat.completions.create({
+          messages, stream: true, temperature: p.temperature, top_p: p.topP,
+          max_tokens: p.maxTokens, repetition_penalty: p.repPenalty
+        });
+        let text = '';
+        for await (const ch of it) { text += ch.choices?.[0]?.delta?.content || ''; onText(text); }
+        return text;
+      } else {
+        const ac = new AbortController(); let stop = false, text = '';
+        this.stopFn = () => { stop = true; try { ac.abort(); } catch {} };
+        try {
+          const res = await this.eng.createChatCompletion(messages, {
+            nPredict: p.maxTokens,
+            sampling: { temp: p.temperature, top_p: p.topP, penalty_repeat: p.repPenalty },
+            abortSignal: ac.signal,
+            onNewToken: (tok, piece, curText, opt) => {
+              text = typeof curText === 'string' ? curText : dec.decode(curText);
+              onText(text);
+              if (stop && opt && typeof opt.abortSignal === 'function') opt.abortSignal();
+            }
+          });
+          if (typeof res === 'string' && res) text = res;
+        } catch (e) { if (!stop) throw e; }
+        return text;
+      }
+    } finally { this.stopFn = null; }
+  },
+  stop() { this.stopFn?.(); }
+};
+
+let modelState = { p: 0, text: '', error: false };
+function setModelStatus(p, text, error = false) { modelState = { p, text, error }; renderModelStatus(); }
+function renderModelStatus() {
+  if (!S) return;
+  const ready = Engine.ready, loading = !!Engine.loading;
+  const txt = ready ? 'Modèle prêt : ' + Engine.label
+    : loading ? (modelState.text || 'Chargement…')
+    : modelState.error ? modelState.text : 'Modèle non chargé';
+  const pct = (loading ? modelState.p : ready ? 1 : 0) * 100 + '%';
+  $('#mbText').textContent = txt; $('#mbProg').style.width = pct;
+  $('#modelBar').classList.toggle('hidden', ready);
+  $('#mbLoad').classList.toggle('hidden', loading);
+  $('#s-status').textContent = txt; $('#s-prog').style.width = pct;
+  $('#s-load').disabled = loading;
+}
+async function ensureModel() {
+  if (Engine.ready) return true;
+  try { await Engine.load(setModelStatus); return true; }
+  catch (e) { setModelStatus(0, 'Erreur : ' + (e?.message || e), true); toast(e?.message || String(e)); return false; }
+}
+
+/* ---------- navigation ---------- */
+function show(view) { for (const v of ['home', 'chat', 'editor', 'settings']) $('#v-' + v).classList.toggle('hidden', v !== view); }
+
+function avatarSrc(c) {
+  if (c.avatar) return c.avatar;
+  const colors = ['#c2416b', '#7c5cff', '#2a9d8f', '#e76f51', '#3a86ff', '#8338ec', '#d4a017'];
+  let h = 0; for (const ch of c.name || '?') h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const l = esc((c.name || '?').trim().charAt(0).toUpperCase() || '?');
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${colors[h % colors.length]}"/><text x="32" y="43" font-size="30" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,sans-serif">${l}</text></svg>`);
+}
+
+/* ---------- accueil ---------- */
+function renderHome() {
+  const list = $('#homeList');
+  if (!S.characters.length) { list.innerHTML = '<p class="muted center">Aucun personnage. Crée-en un ou importe une fiche.</p>'; return; }
+  const last = id => Math.max(0, ...S.chats.filter(x => x.charId === id).map(x => x.updated));
+  const chars = [...S.characters].sort((a, b) => last(b.id) - last(a.id));
+  list.innerHTML = chars.map(c => `
+    <div class="card" data-id="${c.id}">
+      <img class="avatar" src="${avatarSrc(c)}" alt="">
+      <div class="card-body"><div class="card-title">${esc(c.name)}</div><div class="card-sub">${esc((c.description || '').slice(0, 90))}</div></div>
+      <button class="icon" data-edit="${c.id}" aria-label="Modifier">✎</button>
+    </div>`).join('');
+}
+
+/* ---------- conversations ---------- */
+function fill(t, c) {
+  const u = S.persona.name || 'Utilisateur';
+  return String(t || '').replace(/\{\{char\}\}|<BOT>/gi, c.name).replace(/\{\{user\}\}|<USER>/gi, u);
+}
+function newChat(c) {
+  const chat = { id: uid(), charId: c.id, created: Date.now(), updated: Date.now(), messages: [] };
+  if (c.firstMessage?.trim()) chat.messages.push({ id: uid(), role: 'assistant', content: fill(c.firstMessage, c) });
+  S.chats.push(chat); save(); return chat;
+}
+function openCharacter(id) {
+  const c = getChar(id); if (!c) return;
+  const chats = S.chats.filter(x => x.charId === id).sort((a, b) => b.updated - a.updated);
+  openChat((chats[0] || newChat(c)).id);
+}
+function openChat(chatId) {
+  const chat = getChat(chatId); if (!chat) return;
+  cur = { charId: chat.charId, chatId };
+  const c = curChar();
+  $('#chatTitle').textContent = c.name; $('#chatAvatar').src = avatarSrc(c);
+  renderMsgs(); show('chat'); renderModelStatus(); setSendState();
+  requestAnimationFrame(scrollBottom);
+}
+
+function fmt(t) {
+  let h = esc(t);
+  h = h.replace(/(«[^»\n]*»|“[^”\n]*”|&quot;[^\n]*?&quot;)/g, '<span class="q">$1</span>')
+       .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+       .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+       .replace(/\n/g, '<br>');
+  return h || '<span class="typing">●●●</span>';
+}
+function renderMsgs() {
+  const chat = curChat(); if (!chat) return;
+  const lastIdx = chat.messages.length - 1;
+  $('#msgs').innerHTML = chat.messages.map((m, i) => {
+    let extra = '';
+    if (i === lastIdx && m.role === 'assistant' && !Gen.busy) {
+      const nav = m.alts && m.alts.length > 1 ? `<button data-sw="-1">‹</button><span>${m.ai + 1}/${m.alts.length}</span><button data-sw="1">›</button>` : '';
+      extra = `<div class="swipe">${nav}<button data-sw="r" aria-label="Régénérer">↻</button></div>`;
+    }
+    return `<div class="msg ${m.role}" data-id="${m.id}"><div class="bubble">${fmt(m.content)}</div>${extra}</div>`;
+  }).join('');
+}
+const box = () => $('#msgs');
+const nearBottom = () => { const b = box(); return b.scrollHeight - b.scrollTop - b.clientHeight < 140; };
+const scrollBottom = () => { const b = box(); b.scrollTop = b.scrollHeight; };
+
+function setContent(m, t) { m.content = t; if (m.alts) m.alts[m.ai] = t; }
+
+function params(c) {
+  const s = S.settings, g = c.gen || {};
+  const pick = k => (typeof g[k] === 'number' && !isNaN(g[k])) ? g[k] : s[k];
+  return { temperature: pick('temperature'), topP: pick('topP'), maxTokens: Math.round(pick('maxTokens')), repPenalty: pick('repPenalty') };
+}
+
+function buildMessages(c, history) {
+  const st = S.settings;
+  const parts = [fill(c.systemPrompt?.trim() || st.systemPrompt || DEFAULT_SYS, c)];
+  if (c.description?.trim()) parts.push(`[Personnage : ${c.name}]\n` + fill(c.description, c));
+  if (c.scenario?.trim()) parts.push('[Scénario]\n' + fill(c.scenario, c));
+  if (S.persona.description?.trim()) parts.push(`[À propos de ${S.persona.name}]\n` + fill(S.persona.description, c));
+  if (c.examples?.trim()) parts.push('[Exemples de dialogue]\n' + fill(c.examples, c));
+  const system = parts.join('\n\n');
+  const p = params(c);
+  const budget = Math.max(1200, (st.nCtx - p.maxTokens - 80) * 3); // ≈ 3 caractères par token
+  let used = system.length; const out = [];
+  for (let i = history.length - 1; i >= 0; i--) {
+    const m = history[i]; const content = fill(m.content, c);
+    if (used + content.length > budget && out.length) break;
+    used += content.length; out.unshift({ role: m.role, content });
+  }
+  const merged = [];
+  for (const m of out) { const l = merged.at(-1); if (l && l.role === m.role) l.content += '\n\n' + m.content; else merged.push({ ...m }); }
+  if (merged[0]?.role === 'assistant') merged.unshift({ role: 'user', content: '[Début de la conversation]' });
+  if (!merged.length || merged.at(-1).role !== 'user') merged.push({ role: 'user', content: '[Continue]' });
+  return [{ role: 'system', content: system }, ...merged];
+}
+
+function cleanOut(t, c) {
+  t = String(t || ''); let cut = false;
+  const n = S?.persona?.name;
+  if (n) {
+    const i = t.search(new RegExp('\\n\\s*' + escRe(n) + '\\s*:'));
+    if (i > 0) { t = t.slice(0, i); cut = true; }
+  }
+  if (c?.name) t = t.replace(new RegExp('^\\s*' + escRe(c.name) + '\\s*:\\s*'), '');
+  return [t.replace(/^\s+/, ''), cut];
+}
+
+const Gen = { busy: false };
+function setSendState() {
+  const b = $('#sendBtn');
+  b.textContent = Gen.busy ? '■' : '➤';
+  b.classList.toggle('stop', Gen.busy);
+  b.setAttribute('aria-label', Gen.busy ? 'Arrêter' : 'Envoyer');
+}
+
+async function generate(regen = false) {
+  if (Gen.busy) return;
+  const chat = curChat(), c = curChar(); if (!chat || !c) return;
+  const chatId = chat.id;
+  Gen.busy = true; setSendState(); renderMsgs();
+  let m = null, isNew = false;
+  try {
+    if (!await ensureModel()) return;
+    if (!S || cur.chatId !== chatId) return;
+    if (regen) {
+      m = chat.messages.at(-1);
+      if (!m || m.role !== 'assistant') return;
+      if (!m.alts) { m.alts = [m.content]; m.ai = 0; }
+      m.alts.push(''); m.ai = m.alts.length - 1; m.content = '';
+    } else {
+      m = { id: uid(), role: 'assistant', content: '' };
+      chat.messages.push(m); isNew = true;
+    }
+    const msgs = buildMessages(c, chat.messages.slice(0, chat.messages.indexOf(m)));
+    renderMsgs(); scrollBottom();
+    const full = await Engine.generate(msgs, params(c), t => {
+      if (!S) return;
+      const [txt, cut] = cleanOut(t, c);
+      setContent(m, txt);
+      if (cut) Engine.stop();
+      const b = document.querySelector(`.msg[data-id="${m.id}"] .bubble`);
+      if (b) { const nb = nearBottom(); b.innerHTML = fmt(m.content); if (nb) scrollBottom(); }
+    });
+    if (S) setContent(m, cleanOut(full, c)[0] || m.content);
+  } catch (e) {
+    toast('Erreur : ' + (e?.message || e));
+  } finally {
+    Gen.busy = false;
+    if (S && m) {
+      if (!m.content.trim()) {
+        if (isNew) { const i = chat.messages.indexOf(m); if (i >= 0) chat.messages.splice(i, 1); }
+        else if (m.alts) { m.alts.pop(); m.ai = m.alts.length - 1; m.content = m.alts[m.ai] || ''; if (m.alts.length <= 1) { delete m.alts; delete m.ai; } }
+      }
+      chat.updated = Date.now(); save();
+    }
+    if (S && cur.chatId === chatId) renderMsgs();
+    setSendState();
+  }
+}
+
+function send() {
+  const chat = curChat(); if (!chat) return;
+  const t = $('#input').value.trim();
+  if (t) {
+    chat.messages.push({ id: uid(), role: 'user', content: t });
+    $('#input').value = ''; autosize();
+    chat.updated = Date.now(); save(); renderMsgs(); scrollBottom();
+    generate();
+  } else if (chat.messages.at(-1)?.role === 'user') generate();
+}
+
+function autosize() { const t = $('#input'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; }
+
+/* ---------- feuilles (menus) ---------- */
+function openSheet(html, onMount) {
+  const b = $('#sheetBody'); b.onclick = null; b.innerHTML = html;
+  $('#sheet').classList.remove('hidden'); onMount?.(b);
+}
+function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheetBody').innerHTML = ''; $('#sheetBody').onclick = null; }
+function actionSheet(items, title) {
+  openSheet(`${title ? `<div class="sheet-title">${esc(title)}</div>` : ''}${items.map((it, i) => `<button class="sheet-btn ${it.danger ? 'danger-text' : ''}" data-i="${i}">${esc(it.t)}</button>`).join('')}<button class="sheet-btn" data-i="-1">Annuler</button>`,
+    b => { b.onclick = e => { const bt = e.target.closest('[data-i]'); if (!bt) return; const i = +bt.dataset.i; closeSheet(); if (i >= 0) items[i].f(); }; });
+}
+const confirmSheet = (text, ok, fn) => actionSheet([{ t: ok, danger: true, f: fn }], text);
+
+function msgActions(id) {
+  const chat = curChat(); const i = chat.messages.findIndex(m => m.id === id); if (i < 0) return;
+  const m = chat.messages[i]; const isLast = i === chat.messages.length - 1;
+  const items = [
+    { t: 'Copier', f: () => navigator.clipboard?.writeText(m.content).then(() => toast('Copié')) },
+    { t: 'Modifier', f: () => editMsg(m) },
+  ];
+  if (m.role === 'assistant' && isLast) items.push({ t: 'Régénérer', f: () => generate(true) });
+  if (m.role === 'user' && isLast) items.push({ t: 'Obtenir une réponse', f: () => generate() });
+  items.push({ t: 'Supprimer ce message', danger: true, f: () => { chat.messages.splice(i, 1); save(); renderMsgs(); } });
+  if (!isLast) items.push({ t: 'Supprimer à partir d\'ici', danger: true, f: () => { chat.messages.splice(i); save(); renderMsgs(); } });
+  actionSheet(items);
+}
+function editMsg(m) {
+  openSheet(`<div class="sheet-title">Modifier le message</div><textarea id="em" rows="9">${esc(m.content)}</textarea>
+    <div class="row gap"><button id="emC" class="grow">Annuler</button><button id="emOk" class="primary grow">Enregistrer</button></div>`, b => {
+    $('#emC', b).onclick = closeSheet;
+    $('#emOk', b).onclick = () => { setContent(m, $('#em', b).value); save(); closeSheet(); renderMsgs(); };
+  });
+}
+function chatListSheet() {
+  const list = S.chats.filter(x => x.charId === cur.charId).sort((a, b) => b.updated - a.updated);
+  openSheet(`<div class="sheet-title">Conversations avec ${esc(curChar().name)}</div>${list.map(ch => {
+    const last = ch.messages.at(-1);
+    return `<div class="chat-item ${ch.id === cur.chatId ? 'on' : ''}" data-open="${ch.id}"><div class="grow">
+      <div class="small muted">${new Date(ch.updated).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })} · ${ch.messages.length} messages</div>
+      <div class="ellipsis">${esc(last ? last.content.slice(0, 90) : '(vide)')}</div></div>
+      <button class="icon" data-del="${ch.id}" aria-label="Supprimer">🗑</button></div>`;
+  }).join('')}<button class="sheet-btn" data-close>Fermer</button>`, b => {
+    b.onclick = e => {
+      const d = e.target.closest('[data-del]');
+      if (d) {
+        S.chats = S.chats.filter(x => x.id !== d.dataset.del); save();
+        if (d.dataset.del === cur.chatId) { closeSheet(); openCharacter(cur.charId); } else chatListSheet();
+        return;
+      }
+      const o = e.target.closest('[data-open]'); if (o) { closeSheet(); openChat(o.dataset.open); return; }
+      if (e.target.closest('[data-close]')) closeSheet();
+    };
+  });
+}
+
+/* ---------- éditeur de personnage ---------- */
+let editId = null, editAvatar = null, editReturn = 'home';
+async function resizeImage(file, size = 320) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Image illisible')); i.src = url; });
+    const s = Math.min(img.width, img.height);
+    const cv = document.createElement('canvas'); cv.width = cv.height = size;
+    // recadrage carré, centré un peu vers le haut (visages)
+    cv.getContext('2d').drawImage(img, (img.width - s) / 2, Math.max(0, (img.height - s) * 0.25), s, s, 0, 0, size, size);
+    return cv.toDataURL('image/jpeg', 0.85);
+  } finally { URL.revokeObjectURL(url); }
+}
+function openEditor(id, ret = 'home') {
+  editId = id; editReturn = ret;
+  const c = id ? getChar(id) : { name: '', description: '', scenario: '', firstMessage: '', examples: '', systemPrompt: '', gen: {}, avatar: null };
+  editAvatar = c.avatar || null;
+  $('#edTitle').textContent = id ? 'Modifier' : 'Nouveau personnage';
+  $('#e-name').value = c.name; $('#e-desc').value = c.description || ''; $('#e-scen').value = c.scenario || '';
+  $('#e-first').value = c.firstMessage || ''; $('#e-ex').value = c.examples || ''; $('#e-sys').value = c.systemPrompt || '';
+  $('#e-sys').placeholder = 'Par défaut : ' + (S.settings.systemPrompt || DEFAULT_SYS).slice(0, 80) + '…';
+  const g = c.gen || {};
+  $('#e-temp').value = g.temperature ?? ''; $('#e-topp').value = g.topP ?? ''; $('#e-max').value = g.maxTokens ?? ''; $('#e-rep').value = g.repPenalty ?? '';
+  $('#edDelete').classList.toggle('hidden', !id); $('#edExport').classList.toggle('hidden', !id);
+  refreshEdAvatar(); show('editor'); $('#v-editor .scroll').scrollTop = 0;
+}
+function refreshEdAvatar() { $('#e-av').src = editAvatar || avatarSrc({ name: $('#e-name').value || '?' }); }
+function closeEditor() {
+  if (editReturn === 'chat' && curChat()) openChat(cur.chatId);
+  else { renderHome(); show('home'); }
+}
+function saveEditor() {
+  const name = $('#e-name').value.trim();
+  if (!name) return toast('Donne un nom au personnage.');
+  const num = s => { const v = parseFloat($(s).value); return isNaN(v) ? undefined : v; };
+  const data = {
+    name, avatar: editAvatar, description: $('#e-desc').value, scenario: $('#e-scen').value,
+    firstMessage: $('#e-first').value, examples: $('#e-ex').value, systemPrompt: $('#e-sys').value,
+    gen: { temperature: num('#e-temp'), topP: num('#e-topp'), maxTokens: num('#e-max'), repPenalty: num('#e-rep') }
+  };
+  if (editId) Object.assign(getChar(editId), data);
+  else { const c = { id: uid(), ...data }; S.characters.push(c); editId = c.id; }
+  save(); toast('Enregistré');
+  closeEditor();
+}
+
+function exportCharacter(c) {
+  const card = {
+    spec: 'chara_card_v2', spec_version: '2.0',
+    data: {
+      name: c.name, description: c.description, personality: '', scenario: c.scenario,
+      first_mes: c.firstMessage, mes_example: c.examples, system_prompt: c.systemPrompt,
+      creator_notes: '', tags: [], alternate_greetings: [], post_history_instructions: '',
+      extensions: { chatlocal: { gen: c.gen || {}, avatar: c.avatar || null } }
+    }
+  };
+  download((c.name || 'personnage').replace(/[^\w\-]+/g, '_') + '.json', JSON.stringify(card, null, 2));
+}
+
+function pngText(buf) {
+  const out = {}; const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength); let p = 8;
+  while (p + 8 <= buf.length) {
+    const len = dv.getUint32(p); const type = bin(buf.subarray(p + 4, p + 8));
+    const data = buf.subarray(p + 8, p + 8 + len);
+    if (type === 'tEXt') { const z = data.indexOf(0); if (z > 0) out[bin(data.subarray(0, z))] = bin(data.subarray(z + 1)); }
+    if (type === 'IEND') break;
+    p += 12 + len;
+  }
+  return out;
+}
+async function importCard(file) {
+  let json, avatar = null;
+  if (file.type === 'image/png' || /\.png$/i.test(file.name)) {
+    const buf = new Uint8Array(await file.arrayBuffer()); const t = pngText(buf);
+    const raw = t.ccv3 || t.chara; if (!raw) throw new Error('Aucune fiche trouvée dans ce PNG.');
+    json = JSON.parse(dec.decode(unb64(raw.trim())));
+    avatar = await resizeImage(file);
+  } else json = JSON.parse(await file.text());
+  const d = json.data || json;
+  const c = {
+    id: uid(), name: d.name || d.char_name || 'Sans nom',
+    description: [d.description, d.personality || d.char_persona].filter(x => x && String(x).trim()).join('\n\n'),
+    scenario: d.scenario || d.world_scenario || '', firstMessage: d.first_mes || d.char_greeting || '',
+    examples: d.mes_example || d.example_dialogue || '', systemPrompt: d.system_prompt || '',
+    gen: d.extensions?.chatlocal?.gen || {}, avatar: avatar || d.extensions?.chatlocal?.avatar || null
+  };
+  S.characters.push(c); save(); renderHome(); toast('Importé : ' + c.name);
+}
+
+/* ---------- réglages ---------- */
+let modelOptions = WEBLLM_MODELS.slice();
+function fillModelSelect() {
+  const s = S.settings, sel = $('#s-model');
+  let opts = modelOptions;
+  if (s.webllmModel !== '__custom' && !opts.find(o => o[0] === s.webllmModel)) opts = [[s.webllmModel, s.webllmModel], ...opts];
+  sel.innerHTML = opts.map(([id, l]) => `<option value="${esc(id)}">${esc(l)}</option>`).join('') + '<option value="__custom">Modèle personnalisé…</option>';
+  sel.value = s.webllmModel;
+}
+function renderSettings() {
+  const s = S.settings;
+  $$('[data-engine]').forEach(b => b.classList.toggle('on', b.dataset.engine === s.engine));
+  $('#s-webllm').classList.toggle('hidden', s.engine !== 'webllm');
+  $('#s-wllama').classList.toggle('hidden', s.engine !== 'wllama');
+  $('#s-gpuWarn').classList.toggle('hidden', !!navigator.gpu);
+  fillModelSelect();
+  $('#s-custom').classList.toggle('hidden', s.webllmModel !== '__custom');
+  $('#s-cUrl').value = s.customModel.url; $('#s-cId').value = s.customModel.id; $('#s-cLib').value = s.customModel.lib;
+  $$('[data-gsrc]').forEach(b => b.classList.toggle('on', b.dataset.gsrc === s.ggufSource));
+  $('#s-gUrlBox').classList.toggle('hidden', s.ggufSource !== 'url');
+  $('#s-gFileBox').classList.toggle('hidden', s.ggufSource !== 'file');
+  $('#s-gUrl').value = s.ggufUrl;
+  $('#s-gFileName').textContent = s.ggufFileName ? 'Fichier : ' + s.ggufFileName : 'Aucun fichier choisi.';
+  $('#s-ctx').value = String(s.nCtx);
+  $('#s-temp').value = s.temperature; $('#s-topp').value = s.topP; $('#s-max').value = s.maxTokens; $('#s-rep').value = s.repPenalty;
+  $('#s-uname').value = S.persona.name; $('#s-udesc').value = S.persona.description;
+  $('#s-sys').value = s.systemPrompt; $('#s-lock').value = String(s.autoLock);
+  renderModelStatus(); updateStorage();
+}
+async function updateStorage() {
+  try {
+    const e = await navigator.storage.estimate();
+    $('#s-storage').textContent = `Espace utilisé : ${fmtMB(e.usage)} (modèles compris) sur ${fmtMB(e.quota)} disponibles.`;
+  } catch { $('#s-storage').textContent = ''; }
+}
+
+function changePinSheet() {
+  openSheet(`<div class="sheet-title">Changer le code</div>
+    <input id="cp0" type="password" placeholder="Code actuel" autocomplete="current-password">
+    <input id="cp1" type="password" placeholder="Nouveau code (4 min.)" class="mt" autocomplete="new-password">
+    <input id="cp2" type="password" placeholder="Confirmer le nouveau code" class="mt" autocomplete="new-password">
+    <p id="cpMsg" class="muted small"></p>
+    <div class="row gap"><button id="cpC" class="grow">Annuler</button><button id="cpOk" class="primary grow">Valider</button></div>`, b => {
+    $('#cpC', b).onclick = closeSheet;
+    $('#cpOk', b).onclick = async () => {
+      const msg = $('#cpMsg', b), o = $('#cp0', b).value, n1 = $('#cp1', b).value, n2 = $('#cp2', b).value;
+      if (n1.length < 4) return (msg.textContent = 'Nouveau code trop court.');
+      if (n1 !== n2) return (msg.textContent = 'Les nouveaux codes ne correspondent pas.');
+      msg.textContent = 'Vérification…';
+      try {
+        const meta = await idb.get('meta');
+        await decryptJSON(await deriveKey(o, unb64(meta.salt), meta.iter || ITER), await idb.get('vault'));
+      } catch { return (msg.textContent = 'Code actuel incorrect.'); }
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const k = await deriveKey(n1, salt);
+      await idb.setMany({ vault: await encryptJSON(k, S), meta: { salt: b64(salt), iter: ITER, created: Date.now() } });
+      KEY = k; closeSheet(); toast('Code modifié');
+    };
+  });
+}
+
+async function exportBackup() {
+  await saveNow();
+  const meta = await idb.get('meta'); const vault = await idb.get('vault');
+  download(`chatlocal-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ app: 'chatlocal', v: 1, salt: meta.salt, iter: meta.iter || ITER, ...vault }));
+  toast('Sauvegarde chiffrée avec ton code actuel');
+}
+async function importBackup(file) {
+  let obj; try { obj = JSON.parse(await file.text()); } catch { return toast('Fichier invalide'); }
+  if (obj.app !== 'chatlocal' || !obj.salt || !obj.data) return toast('Ce n\'est pas une sauvegarde Chat Local.');
+  openSheet(`<div class="sheet-title">Restaurer une sauvegarde</div>
+    <p class="small muted">Entre le code utilisé au moment de la sauvegarde. Tes données actuelles seront remplacées.</p>
+    <input id="ib0" type="password" placeholder="Code de la sauvegarde"><p id="ibMsg" class="muted small"></p>
+    <div class="row gap"><button id="ibC" class="grow">Annuler</button><button id="ibOk" class="primary grow">Restaurer</button></div>`, b => {
+    $('#ibC', b).onclick = closeSheet;
+    $('#ibOk', b).onclick = async () => {
+      $('#ibMsg', b).textContent = 'Déchiffrement…';
+      try {
+        const k = await deriveKey($('#ib0', b).value, unb64(obj.salt), obj.iter || ITER);
+        S = migrate(await decryptJSON(k, obj));
+        await saveNow(); closeSheet(); renderSettings(); renderHome(); toast('Sauvegarde restaurée');
+      } catch { $('#ibMsg', b).textContent = 'Code incorrect ou fichier abîmé.'; }
+    };
+  });
+}
+
+/* ---------- liaisons ---------- */
+function bindAll() {
+  // verrou
+  $('#setupBtn').onclick = () => doSetup().catch(e => ($('#lockMsg').textContent = 'Erreur : ' + e.message));
+  $('#pin2').onkeydown = e => { if (e.key === 'Enter') $('#setupBtn').click(); };
+  $('#unlockBtn').onclick = doUnlock;
+  $('#pin').onkeydown = e => { if (e.key === 'Enter') doUnlock(); };
+  $('#forgotBtn').onclick = () => confirmSheet('Sans le code, les données ne peuvent pas être lues. Tout effacer et recommencer à zéro ?', 'Tout effacer', wipeAll);
+  $('#lockBtn').onclick = lock;
+
+  // accueil
+  $('#homeList').onclick = e => {
+    const ed = e.target.closest('[data-edit]'); if (ed) { openEditor(ed.dataset.edit, 'home'); return; }
+    const card = e.target.closest('.card'); if (card) openCharacter(card.dataset.id);
+  };
+  $('#newCharBtn').onclick = () => openEditor(null, 'home');
+  $('#importCharBtn').onclick = () => pick($('#importCharFile'));
+  $('#importCharFile').onchange = async e => {
+    pickerUntil = 0; const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try { await importCard(f); } catch (err) { toast('Import impossible : ' + err.message); }
+  };
+  $('#settingsBtn').onclick = () => { renderSettings(); show('settings'); $('#v-settings .scroll').scrollTop = 0; };
+
+  // conversation
+  $('#chatBack').onclick = () => { if (Gen.busy) Engine.stop(); renderHome(); show('home'); };
+  $('#sendBtn').onclick = () => { if (Gen.busy) Engine.stop(); else send(); };
+  $('#input').addEventListener('input', autosize);
+  $('#input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) { e.preventDefault(); $('#sendBtn').click(); }
+  });
+  $('#mbLoad').onclick = ensureModel;
+  $('#msgs').onclick = e => {
+    if (Gen.busy) return;
+    const chat = curChat(); if (!chat) return;
+    const sw = e.target.closest('[data-sw]');
+    if (sw) {
+      const m = chat.messages.at(-1);
+      if (sw.dataset.sw === 'r') { generate(true); return; }
+      const n = m.ai + (+sw.dataset.sw);
+      if (m.alts && n >= 0 && n < m.alts.length) { m.ai = n; m.content = m.alts[n]; save(); renderMsgs(); }
+      return;
+    }
+    const el = e.target.closest('.msg'); if (el) msgActions(el.dataset.id);
+  };
+  $('#chatMenu').onclick = () => {
+    if (Gen.busy || !curChar()) return;
+    actionSheet([
+      { t: 'Nouvelle conversation', f: () => openChat(newChat(curChar()).id) },
+      { t: 'Conversations précédentes', f: chatListSheet },
+      { t: 'Modifier le personnage', f: () => openEditor(cur.charId, 'chat') },
+      Engine.ready ? { t: 'Décharger le modèle (libère la mémoire)', f: async () => { await Engine.unload(); renderModelStatus(); } } : { t: 'Charger le modèle', f: ensureModel },
+      { t: 'Supprimer cette conversation', danger: true, f: () => confirmSheet('Supprimer définitivement cette conversation ?', 'Supprimer', () => { S.chats = S.chats.filter(x => x.id !== cur.chatId); save(); openCharacter(cur.charId); }) }
+    ], curChar().name);
+  };
+
+  // éditeur
+  $('#edBack').onclick = closeEditor;
+  $('#edSave').onclick = saveEditor;
+  $('#e-name').oninput = () => { if (!editAvatar) refreshEdAvatar(); };
+  $('#e-avBtn').onclick = () => pick($('#e-avfile'));
+  $('#e-av').onclick = () => pick($('#e-avfile'));
+  $('#e-avfile').onchange = async e => {
+    pickerUntil = 0; const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try { editAvatar = await resizeImage(f); refreshEdAvatar(); } catch (err) { toast(err.message); }
+  };
+  $('#e-avDel').onclick = () => { editAvatar = null; refreshEdAvatar(); };
+  $('#edExport').onclick = () => { const c = getChar(editId); if (c) exportCharacter(c); };
+  $('#edDelete').onclick = () => {
+    const c = getChar(editId); if (!c) return;
+    confirmSheet(`Supprimer ${c.name} et toutes ses conversations ?`, 'Supprimer', () => {
+      S.characters = S.characters.filter(x => x.id !== c.id); S.chats = S.chats.filter(x => x.charId !== c.id);
+      save(); renderHome(); show('home');
+    });
+  };
+
+  // réglages
+  $('#setBack').onclick = () => { renderHome(); show('home'); };
+  const changed = () => { save(); renderModelStatus(); };
+  $$('[data-engine]').forEach(b => b.onclick = () => { S.settings.engine = b.dataset.engine; changed(); renderSettings(); });
+  $$('[data-gsrc]').forEach(b => b.onclick = () => { S.settings.ggufSource = b.dataset.gsrc; changed(); renderSettings(); });
+  $('#s-model').onchange = e => { S.settings.webllmModel = e.target.value; changed(); renderSettings(); };
+  $('#s-cUrl').oninput = e => { S.settings.customModel.url = e.target.value.trim(); changed(); };
+  $('#s-cId').oninput = e => { S.settings.customModel.id = e.target.value.trim(); changed(); };
+  $('#s-cLib').oninput = e => { S.settings.customModel.lib = e.target.value.trim(); changed(); };
+  $('#s-gUrl').oninput = e => { S.settings.ggufUrl = e.target.value.trim(); changed(); };
+  $('#s-gFileBtn').onclick = () => pick($('#s-gFile'));
+  $('#s-gFile').onchange = async e => {
+    pickerUntil = 0; const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (!/\.gguf$/i.test(f.name)) toast('Attention : ce fichier ne semble pas être un .gguf');
+    await Engine.unload();
+    try {
+      $('#s-load').disabled = true;
+      await opfsSaveModel(f, p => { $('#s-status').textContent = `Copie dans l'app… ${Math.round(p * 100)} %`; $('#s-prog').style.width = p * 100 + '%'; });
+      sessionModelFile = null; S.settings.ggufFileName = f.name; toast('Fichier enregistré dans l\'app');
+    } catch {
+      sessionModelFile = f; S.settings.ggufFileName = f.name;
+      toast('Fichier utilisable pour cette session seulement : il faudra le rechoisir à la prochaine ouverture.');
+    } finally { $('#s-load').disabled = false; }
+    changed(); renderSettings();
+  };
+  $('#s-fullList').onclick = async () => {
+    try {
+      toast('Chargement de la liste…');
+      const w = await import(WEBLLM_URL);
+      modelOptions = w.prebuiltAppConfig.model_list
+        .filter(m => !/embed|snowflake/i.test(m.model_id))
+        .map(m => [m.model_id, m.model_id + (m.vram_required_MB ? ` · ${(m.vram_required_MB / 1024).toFixed(1)} Go` : ''), m.vram_required_MB || 99999])
+        .sort((a, b) => a[2] - b[2]);
+      fillModelSelect(); toast(modelOptions.length + ' modèles disponibles');
+    } catch (e) { toast('Impossible de charger la liste : ' + e.message); }
+  };
+  $('#s-ctx').onchange = e => { S.settings.nCtx = +e.target.value; changed(); };
+  const num = (sel, key, min, max, int = false) => $(sel).onchange = e => {
+    let v = parseFloat(e.target.value); if (isNaN(v)) v = defaultSettings()[key];
+    v = Math.min(max, Math.max(min, v)); if (int) v = Math.round(v);
+    S.settings[key] = v; e.target.value = v; save();
+  };
+  num('#s-temp', 'temperature', 0, 2); num('#s-topp', 'topP', 0, 1); num('#s-max', 'maxTokens', 16, 4096, true); num('#s-rep', 'repPenalty', 1, 2);
+  $('#s-uname').oninput = e => { S.persona.name = e.target.value.trim() || 'Moi'; save(); };
+  $('#s-udesc').oninput = e => { S.persona.description = e.target.value; save(); };
+  $('#s-sys').oninput = e => { S.settings.systemPrompt = e.target.value; save(); };
+  $('#s-sysReset').onclick = () => { S.settings.systemPrompt = DEFAULT_SYS; $('#s-sys').value = DEFAULT_SYS; save(); };
+  $('#s-lock').onchange = e => { S.settings.autoLock = +e.target.value; save(); };
+  $('#s-load').onclick = ensureModel;
+  $('#s-unload').onclick = async () => { await Engine.unload(); setModelStatus(0, ''); };
+  $('#s-pin').onclick = changePinSheet;
+  $('#s-export').onclick = () => exportBackup().catch(e => toast(e.message));
+  $('#s-import').onclick = () => pick($('#s-importFile'));
+  $('#s-importFile').onchange = e => { pickerUntil = 0; const f = e.target.files[0]; e.target.value = ''; if (f) importBackup(f); };
+  $('#s-delModels').onclick = () => confirmSheet('Supprimer les modèles téléchargés ? Il faudra les re-télécharger.', 'Supprimer', async () => {
+    await Engine.unload(); await clearModelStorage(); S.settings.ggufFileName = ''; save(); renderSettings(); toast('Modèles supprimés');
+  });
+  $('#s-wipe').onclick = () => confirmSheet('Effacer TOUTES les données (personnages, conversations, réglages, modèles) ? Action irréversible.', 'Tout effacer', wipeAll);
+
+  // feuille : tap sur le fond = fermer
+  $('#sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
+}
+
+/* ---------- divers ---------- */
+function setupViewport() {
+  const vv = window.visualViewport;
+  const f = () => { document.documentElement.style.setProperty('--app-h', (vv ? vv.height : innerHeight) + 'px'); if (vv) window.scrollTo(0, 0); };
+  (vv || window).addEventListener('resize', f); f();
+}
+function makeIcon() {
+  try {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 180; const x = cv.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 180, 180); g.addColorStop(0, '#c2416b'); g.addColorStop(1, '#4b2378');
+    x.fillStyle = g; x.fillRect(0, 0, 180, 180);
+    x.fillStyle = '#fff'; x.beginPath(); x.ellipse(90, 84, 52, 40, 0, 0, Math.PI * 2); x.fill();
+    x.beginPath(); x.moveTo(62, 112); x.lineTo(52, 140); x.lineTo(88, 120); x.fill();
+    x.fillStyle = '#c2416b'; for (const cx of [68, 90, 112]) { x.beginPath(); x.arc(cx, 84, 7, 0, Math.PI * 2); x.fill(); }
+    const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = cv.toDataURL('image/png'); document.head.appendChild(l);
+  } catch {}
+}
+function registerSW() {
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+makeIcon(); setupViewport(); bindAll(); registerSW();
+try { navigator.storage?.persist?.(); } catch {}
+initLock().catch(e => showLock('none', 'Erreur au démarrage : ' + e.message));
+</script>
+</body>
+</html>
