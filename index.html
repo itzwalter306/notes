@@ -351,7 +351,13 @@ body.privacy #app,body.privacy #sheet,body.privacy #viewer{filter:blur(28px)}
    Données : IndexedDB, chiffrées AES-GCM (clé PBKDF2 du code)
    ========================================================= */
 
-const WEBLLM_URL = 'https://esm.run/@mlc-ai/web-llm@0.2';
+// 0.2.79 : version figée, compatible avec les modèles communautaires (format ndarray-cache)
+const WEBLLM_URL = 'https://esm.run/@mlc-ai/web-llm@0.2.79';
+// Modèles non censurés au format MLC : on réutilise la librairie WebGPU du modèle officiel de même architecture
+const WEBLLM_PRESETS = {
+  'preset:llama3b-abl': { label: '★ Llama 3.2 3B non censuré (abliterated)', base: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', id: 'Llama-3.2-3B-Instruct-abliterated-q4f16_1-MLC', model: 'https://huggingface.co/kdjunkit2/Llama-3.2-3B-Instruct-abliterated-q4f16_1-MLC' },
+  'preset:dolphin15': { label: '★ Dolphin 3 · Qwen 2.5 1.5B non censuré', base: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC', id: 'Dolphin3.0-Qwen2.5-1.5B-q4f16_1-MLC', model: 'https://huggingface.co/huggingkot/Dolphin3.0-Qwen2.5-1.5B-q4f16_1-MLC' },
+};
 // 2.3.7 = dernière version compatible Safari/iPhone (la 2.4+ exige Memory64, absent de Safari)
 const WLLAMA_BASE = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.7/esm/';
 const ITER = 310000;
@@ -764,7 +770,13 @@ const Engine = {
         onP(0, 'Chargement de WebLLM…');
         const webllm = await import(WEBLLM_URL);
         let appConfig = webllm.prebuiltAppConfig; let id = s.webllmModel;
-        if (id === '__custom') {
+        const pr = WEBLLM_PRESETS[id];
+        if (pr) {
+          const base = appConfig.model_list.find(m => m.model_id === pr.base);
+          if (!base) throw new Error('Librairie de base introuvable pour ce modèle.');
+          appConfig = { ...appConfig, model_list: [...appConfig.model_list, { ...base, model: pr.model, model_id: pr.id }] };
+          id = pr.id;
+        } else if (id === '__custom') {
           const cm = s.customModel;
           if (!cm.url || !cm.lib) throw new Error('Modèle personnalisé incomplet (URL et librairie WASM requises).');
           id = cm.id || 'modele-perso';
@@ -774,14 +786,14 @@ const Engine = {
           appConfig,
           initProgressCallback: r => onP(r.progress ?? 0, (r.text || '').replace(/Fetching param cache/i, 'Téléchargement').slice(0, 120))
         }, { context_window_size: s.nCtx });
-        this.kind = 'webllm'; this.label = id;
+        this.kind = 'webllm'; this.label = pr ? pr.label.replace('★ ', '') : id;
       } else {
         onP(0, 'Chargement de llama.cpp…');
         const mod = await import(WLLAMA_BASE + 'index.js');
         const w = new mod.Wllama({
           'single-thread/wllama.wasm': WLLAMA_BASE + 'single-thread/wllama.wasm',
           'multi-thread/wllama.wasm': WLLAMA_BASE + 'multi-thread/wllama.wasm'
-        });
+        }, { allowOffline: true }); // hors ligne : utilise le modèle déjà en cache
         if (s.ggufSource === 'file') {
           const f = await opfsGetModel();
           if (!f) throw new Error('Aucun fichier GGUF disponible. Choisis-en un dans les réglages.');
@@ -858,7 +870,11 @@ function renderModelStatus() {
 async function ensureModel() {
   if (Engine.ready) return true;
   try { await Engine.load(setModelStatus); return true; }
-  catch (e) { setModelStatus(0, 'Erreur : ' + (e?.message || e), true); toast(e?.message || String(e)); return false; }
+  catch (e) {
+    let msg = e?.message || String(e);
+    if (/out of range|out of memory|RangeError|allocation/i.test(msg)) msg = 'Mémoire insuffisante pour ce modèle. Essaie le moteur WebLLM · GPU, un modèle plus petit, ou un contexte de 2048. (' + msg + ')';
+    setModelStatus(0, 'Erreur : ' + msg, true); toast(msg); return false;
+  }
 }
 
 /* ---------- navigation ---------- */
@@ -1380,7 +1396,7 @@ async function importCard(file) {
 let modelOptions = WEBLLM_MODELS.slice();
 function fillModelSelect() {
   const s = S.settings, sel = $('#s-model');
-  let opts = modelOptions;
+  let opts = [...Object.entries(WEBLLM_PRESETS).map(([k, p]) => [k, p.label]), ...modelOptions];
   if (s.webllmModel !== '__custom' && !opts.find(o => o[0] === s.webllmModel)) opts = [[s.webllmModel, s.webllmModel], ...opts];
   sel.innerHTML = opts.map(([id, l]) => `<option value="${esc(id)}">${esc(l)}</option>`).join('') + '<option value="__custom">Modèle personnalisé…</option>';
   sel.value = s.webllmModel;
